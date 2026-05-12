@@ -20,8 +20,18 @@ export async function handleTransaction(
 ): Promise<RuleResult> {
   const transaction = req.transaction as BaseMessage;
   
+  if (!ruleConfig.config.cases) {
+    throw new Error('Error occurred');
+  }
+
 const country = transaction.Payload.country as unknown as string;
 
-  return exclusiveDetermineOutcome(country, ruleConfig.config.cases);
+  const outcome = exclusiveDetermineOutcome(country, ruleConfig.config.cases);
+
+return {
+        ...ruleRes,
+        subRuleRef: outcome?.subRuleRef,
+        reason: outcome?.reason,
+      };
   
 }
