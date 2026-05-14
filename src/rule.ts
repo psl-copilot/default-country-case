@@ -5,7 +5,7 @@ import type { BaseMessage } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 
 export type RuleExecutorConfig = Required<Pick<ManagerConfig, 'rawHistory' | 'eventHistory' | 'configuration' | 'localCacheConfig'>>;
 
-export const exclusiveDetermineOutcome = (value: string, caseObj: Case): number => {
+export const exclusiveDetermineOutcome = (value: string, caseObj: Case) => {
   const ruleResult = caseObj.expressions.find((expression) => expression?.value === value); 
  return ruleResult ?? caseObj.alternative;
 };
@@ -24,14 +24,20 @@ export async function handleTransaction(
     throw new Error('Error occurred');
   }
 
-const country = transaction.Payload.country as unknown as string;
+const country: string | undefined = transaction.Payload.country as string | undefined;
+    
+     if (!country || typeof country !== 'string') {
+    throw new Error('Data error: query result type mismatch - expected string');
+    }
 
   const outcome = exclusiveDetermineOutcome(country, ruleConfig.config.cases);
 
-return {
+ruleRes.indpdntVarbl = 0;
+    
+    return {
         ...ruleRes,
-        subRuleRef: outcome?.subRuleRef,
-        reason: outcome?.reason,
+        subRuleRef: outcome.subRuleRef,
+        reason: outcome.reason,
       };
   
 }
